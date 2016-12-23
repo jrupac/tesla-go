@@ -10,7 +10,6 @@ import (
 
 const (
 	baseUrl = "https://owner-api.teslamotors.com"
-
 )
 
 type Auth struct {
@@ -31,7 +30,7 @@ type Token struct {
 
 type Vehicle struct {
 	DisplayName string `json:"display_name"`
-	ID 					int64 `json:"id"`
+	ID          int64 `json:"id"`
 	VehicleID   int64 `json:"vehicle_id"`
 }
 
