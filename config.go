@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	log "github.com/golang/glog"
 	"io/ioutil"
-	"log"
 )
 
 type Configuration struct {
@@ -14,7 +14,7 @@ type Configuration struct {
 }
 
 func LoadConfig(path string) Configuration {
-	log.Printf("Loading configuration from %s\n", path)
+	log.Infof("Loading configuration from %s\n", path)
 
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {

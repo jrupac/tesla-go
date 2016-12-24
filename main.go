@@ -2,11 +2,9 @@ package main
 
 import (
 	"flag"
+	log "github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"log"
-	"path"
 	"strconv"
 )
 
@@ -17,8 +15,6 @@ const (
 
 var (
 	configPath      = flag.String("config_path", "config.json", "Path to configuration file.")
-	logDir          = flag.String("log_dir", "/var/log/tesla-go", "Directory of logging destination.")
-	logFilename     = flag.String("log_filename", "tesla-go.INFO", "Name of logging file.")
 	pushgatewayAddr = flag.String("pushgateway_address", "", "URL of pushgateway.")
 )
 
@@ -31,15 +27,8 @@ var (
 
 func main() {
 	flag.Parse()
-	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
-	log.SetOutput(&lumberjack.Logger{
-		Filename:   path.Join(*logDir, *logFilename),
-		MaxSize:    10, // MiB
-		MaxBackups: 5,
-		LocalTime:  true,
-	})
 
-	log.Printf("Tesla Go version %v\n", version)
+	log.Infof("Tesla Go version %v\n", version)
 
 	config := LoadConfig(*configPath)
 	client := NewTeslaClient()
@@ -47,7 +36,7 @@ func main() {
 	if err := client.Authenticate(config); err != nil {
 		log.Fatalf("Failed to authenticate: %s", err)
 	} else {
-		log.Println("Authentication complete.")
+		log.Infof("Authentication complete.")
 	}
 
 	vehicles, err := client.ListVehicles()
@@ -66,6 +55,6 @@ func main() {
 	if err := push.Collectors(jobName, nil, *pushgatewayAddr, odometerMetric); err != nil {
 		log.Fatalf("Failed to push metrics: %s", err)
 	} else {
-		log.Println("Sucessfully pushed metrics.")
+		log.Infof("Sucessfully pushed metrics.")
 	}
 }
