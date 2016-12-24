@@ -27,6 +27,7 @@ var (
 
 func main() {
 	flag.Parse()
+	defer log.Flush()
 
 	log.Infof("Tesla Go version %v\n", version)
 
