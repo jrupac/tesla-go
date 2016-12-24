@@ -23,6 +23,7 @@ var (
 )
 
 func main() {
+	flag.Parse()
 	log.Printf("Tesla Go version %v\n", version)
 
 	config := LoadConfig(*configPath)
