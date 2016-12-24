@@ -39,7 +39,8 @@ type VehicleResponse struct {
 }
 
 type VehicleState struct {
-	Odometer float64 `json:"odometer"`
+	Odometer        float64 `json:"odometer"`
+	FirmwareVersion string  `json:"car_version"`
 }
 
 type VehicleStateResponse struct {
