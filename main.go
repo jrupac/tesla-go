@@ -59,7 +59,8 @@ func main() {
 		firmwareMetric.WithLabelValues(vid, state.FirmwareVersion).Set(1)
 	}
 
-	if err := push.Collectors(jobName, nil, *pushgatewayAddr, odometerMetric); err != nil {
+	err = push.Collectors(jobName, nil, *pushgatewayAddr, odometerMetric, firmwareMetric)
+	if err != nil {
 		log.Fatalf("Failed to push metrics: %s", err)
 	} else {
 		log.Infof("Sucessfully pushed metrics.")
