@@ -27,6 +27,14 @@ var (
 		Name: "firmware_metric",
 		Help: "Current firmware version per vehicle.",
 	}, []string{"vehicle_id", "vehicle_name", "version"})
+	batteryRangeMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "battery_range_metric",
+		Help: "Reported battery range per vehicle.",
+	}, []string{"vehicle_id", "vehicle_name"})
+	batteryLevelMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "battery_level_metric",
+		Help: "Reported battery charge percentage per vehicle.",
+	}, []string{"vehicle_id", "vehicle_name"})
 )
 
 func main() {
@@ -51,15 +59,23 @@ func main() {
 
 	for _, v := range vehicles {
 		vid := strconv.FormatInt(v.ID, 10)
-		state, err := client.GetVehicleState(v)
+		vehicleState, err := client.GetVehicleState(v)
 		if err != nil {
-			log.Fatalf("Error while getting drive state of v %s: %s", v.ID, err)
+			log.Fatalf("Error while getting vehicle state of v %s: %s", v.ID, err)
 		}
-		odometerMetric.WithLabelValues(vid, v.DisplayName).Set(state.Odometer)
-		firmwareMetric.WithLabelValues(vid, v.DisplayName, state.FirmwareVersion).Set(1)
+		chargeState, err := client.GetChargeState(v)
+		if err != nil {
+			log.Fatalf("Error while getting charge state of v %s: %s", v.ID, err)
+		}
+		odometerMetric.WithLabelValues(vid, v.DisplayName).Set(vehicleState.Odometer)
+		firmwareMetric.WithLabelValues(vid, v.DisplayName, vehicleState.FirmwareVersion).Set(1)
+		batteryRangeMetric.WithLabelValues(vid, v.DisplayName).Set(chargeState.BatteryRange)
+		batteryLevelMetric.WithLabelValues(vid, v.DisplayName).Set(float64(chargeState.BatteryLevel))
 	}
 
-	err = push.Collectors(jobName, nil, *pushgatewayAddr, odometerMetric, firmwareMetric)
+	err = push.Collectors(
+		jobName, nil, *pushgatewayAddr,
+		odometerMetric, firmwareMetric, batteryRangeMetric, batteryLevelMetric)
 	if err != nil {
 		log.Fatalf("Failed to push metrics: %s", err)
 	} else {

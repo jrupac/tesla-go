@@ -43,8 +43,17 @@ type VehicleState struct {
 	FirmwareVersion string  `json:"car_version"`
 }
 
-type VehicleStateResponse struct {
-	Response VehicleState `json:"response"`
+type ChargeState struct {
+	BatteryRange    float64 `json:"battery_range"`
+	EstBatteryRange float64 `json:"est_battery_range"`
+	BatteryLevel    int     `json:"battery_level"`
+}
+
+type StateResponse struct {
+	Response struct {
+		*VehicleState
+		*ChargeState
+	} `json:"response"`
 }
 
 type TeslaClient struct {
@@ -136,19 +145,36 @@ func (c *TeslaClient) ListVehicles() ([]Vehicle, error) {
 	return resp.Response, err
 }
 
-func (c *TeslaClient) GetVehicleState(vehicle Vehicle) (VehicleState, error) {
+func (c *TeslaClient) GetVehicleState(vehicle Vehicle) (*VehicleState, error) {
 	endpoint := fmt.Sprintf("/api/1/vehicles/%d/data_request/vehicle_state", vehicle.ID)
 	req, err := c.createRequest("GET", endpoint, nil)
 	if err != nil {
-		return VehicleState{}, err
+		return nil, err
 	}
 
 	body, err := c.issueRequest(req)
 	if err != nil {
-		return VehicleState{}, err
+		return nil, err
 	}
 
-	resp := &VehicleStateResponse{}
+	resp := &StateResponse{}
 	err = json.Unmarshal(body, resp)
-	return resp.Response, nil
+	return resp.Response.VehicleState, nil
+}
+
+func (c *TeslaClient) GetChargeState(vehicle Vehicle) (*ChargeState, error) {
+	endpoint := fmt.Sprintf("/api/1/vehicles/%d/data_request/charge_state", vehicle.ID)
+	req, err := c.createRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.issueRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &StateResponse{}
+	err = json.Unmarshal(body, resp)
+	return resp.Response.ChargeState, nil
 }
