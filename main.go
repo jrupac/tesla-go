@@ -26,7 +26,7 @@ var (
 	firmwareMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "firmware_metric",
 		Help: "Current firmware version per vehicle.",
-	}, []string{"vehicle_id", "version"})
+	}, []string{"vehicle_id", "vehicle_name", "version"})
 )
 
 func main() {
@@ -56,7 +56,7 @@ func main() {
 			log.Fatalf("Error while getting drive state of v %s: %s", v.ID, err)
 		}
 		odometerMetric.WithLabelValues(vid, v.DisplayName).Set(state.Odometer)
-		firmwareMetric.WithLabelValues(vid, state.FirmwareVersion).Set(1)
+		firmwareMetric.WithLabelValues(vid, v.DisplayName, state.FirmwareVersion).Set(1)
 	}
 
 	err = push.Collectors(jobName, nil, *pushgatewayAddr, odometerMetric, firmwareMetric)
