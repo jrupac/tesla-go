@@ -3,9 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"fmt"
 )
 
 const (
@@ -25,13 +25,13 @@ type Token struct {
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int    `json:"expires_in"`
 	RefreshToken string `json:"refresh_token"`
-	CreatedAt    int `json:"created_at"`
+	CreatedAt    int    `json:"created_at"`
 }
 
 type Vehicle struct {
 	DisplayName string `json:"display_name"`
-	ID          int64 `json:"id"`
-	VehicleID   int64 `json:"vehicle_id"`
+	ID          int64  `json:"id"`
+	VehicleID   int64  `json:"vehicle_id"`
 }
 
 type VehicleResponse struct {
@@ -53,7 +53,7 @@ type TeslaClient struct {
 
 func NewTeslaClient() *TeslaClient {
 	return &TeslaClient{
-		client: &http.Client{},
+		client:      &http.Client{},
 		accessToken: "",
 	}
 }
@@ -69,7 +69,7 @@ func (c *TeslaClient) createRequest(method string, endpoint string, body []byte)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	if c.accessToken != "" {
-		req.Header.Set("Authorization", "Bearer " + c.accessToken)
+		req.Header.Set("Authorization", "Bearer "+c.accessToken)
 	}
 	return req, nil
 }
@@ -91,11 +91,11 @@ func (c *TeslaClient) issueRequest(req *http.Request) ([]byte, error) {
 
 func (c *TeslaClient) Authenticate(config Configuration) error {
 	auth := &Auth{
-		GrantType: "password",
-		ClientID: config.ClientId,
+		GrantType:    "password",
+		ClientID:     config.ClientId,
 		ClientSecret: config.ClientSecret,
-		Email: config.Username,
-		Password: config.Password,
+		Email:        config.Username,
+		Password:     config.Password,
 	}
 	data, err := json.Marshal(auth)
 	if err != nil {
