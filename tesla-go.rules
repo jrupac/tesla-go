@@ -1,0 +1,33 @@
+# Grandfather in the misspelled metric. Oops.
+job:odometer:value{job="tesla_go",instance="",exported_job=""} =
+  odometric_metric{exported_job="tesla_collector"}
+    or
+  odometer_metric{exported_job="tesla_collector"}
+
+job:battery_percent:value{job="tesla_go",instance="",exported_job=""} = battery_level_metric{exported_job="tesla_collector"}
+
+job:battery_range:value{job="tesla_go",instance="",exported_job=""} = battery_range_metric{exported_job="tesla_collector"}
+
+job:firmware_version:value{job="tesla_go",instance="",exported_job=""} = firmware_metric{exported_job="tesla_collector"}
+
+job:odometer:delta1d = delta(job:odometer:value{job="tesla_go"}[1d])
+
+job:approx_energy_consumption:ratio_rate{job="tesla_go"} =
+  clamp_min(
+    (
+      (
+        # Derivative of battery level for 70kWh vehicle
+        (deriv(job:battery_percent:value{job="tesla_go"}[2h]) * -70 * 10)
+          and
+        # Only applies if the battery level has changed by 5% in last 2h
+        abs(delta(job:battery_percent:value{job="tesla_go"}[2h])) > 5
+      )
+        /
+      (
+        # Derivative of odometer reading
+        deriv(job:odometer:value{job="tesla_go"}[2h])
+          and
+        # Only applies if car has traveled at least 5mi in the last 2h
+        (delta(job:odometer:value{job="tesla_go"}[2h]) > 5)
+      )
+    ), 0)

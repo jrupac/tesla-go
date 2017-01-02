@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	log "github.com/golang/glog"
 	"io/ioutil"
+
+	log "github.com/golang/glog"
 )
 
 type Configuration struct {

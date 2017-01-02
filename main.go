@@ -2,10 +2,11 @@ package main
 
 import (
 	"flag"
+	"strconv"
+
 	log "github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
-	"strconv"
 )
 
 const (
@@ -20,7 +21,7 @@ var (
 
 var (
 	odometerMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "odometric_metric",
+		Name: "odometer_metric",
 		Help: "Current odometer value per vehicle.",
 	}, []string{"vehicle_id", "vehicle_name"})
 	firmwareMetric = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -61,11 +62,11 @@ func main() {
 		vid := strconv.FormatInt(v.ID, 10)
 		vehicleState, err := client.GetVehicleState(v)
 		if err != nil {
-			log.Fatalf("Error while getting vehicle state of v %s: %s", v.ID, err)
+			log.Fatalf("Error while getting vehicle state of v %v: %s", v.ID, err)
 		}
 		chargeState, err := client.GetChargeState(v)
 		if err != nil {
-			log.Fatalf("Error while getting charge state of v %s: %s", v.ID, err)
+			log.Fatalf("Error while getting charge state of v %v: %s", v.ID, err)
 		}
 		odometerMetric.WithLabelValues(vid, v.DisplayName).Set(vehicleState.Odometer)
 		firmwareMetric.WithLabelValues(vid, v.DisplayName, vehicleState.FirmwareVersion).Set(1)
