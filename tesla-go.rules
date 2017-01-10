@@ -16,18 +16,18 @@ job:approx_energy_consumption:ratio_rate{job="tesla_go"} =
   clamp_min(
     (
       (
-        # Derivative of battery level for 70kWh vehicle
-        (deriv(job:battery_percent:value{job="tesla_go"}[2h]) * -70 * 10)
+        # Delta of battery level for 70kWh vehicle
+        (delta(job:battery_percent:value{job="tesla_go"}[1h]) * -70 * 10)
           and
-        # Only applies if the battery level has changed by 5% in last 2h
-        abs(delta(job:battery_percent:value{job="tesla_go"}[2h])) > 5
+        # Only applies if the battery level has decreased by 3% in last 1h
+        (delta(job:battery_percent:value{job="tesla_go"}[1h]) < -3)
       )
         /
       (
-        # Derivative of odometer reading
-        deriv(job:odometer:value{job="tesla_go"}[2h])
+        # Delta of odometer reading
+        delta(job:odometer:value{job="tesla_go"}[1h])
           and
-        # Only applies if car has traveled at least 5mi in the last 2h
-        (delta(job:odometer:value{job="tesla_go"}[2h]) > 5)
+        # Only applies if car has traveled at least 3mi in the last 1h
+        (delta(job:odometer:value{job="tesla_go"}[1h]) > 3)
       )
     ), 0)
