@@ -13,21 +13,18 @@ job:firmware_version:value{job="tesla_go",instance="",exported_job=""} = firmwar
 job:odometer:delta1d = delta(job:odometer:value{job="tesla_go"}[1d])
 
 job:approx_energy_consumption:ratio_rate{job="tesla_go"} =
-  clamp_min(
+  (
     (
-      (
-        # Delta of battery level for 70kWh vehicle
-        (delta(job:battery_percent:value{job="tesla_go"}[1h]) * -70 * 10)
-          and
-        # Only applies if the battery level has decreased by 3% in last 1h
-        (delta(job:battery_percent:value{job="tesla_go"}[1h]) < -3)
-      )
-        /
-      (
-        # Delta of odometer reading
-        delta(job:odometer:value{job="tesla_go"}[1h])
-          and
-        # Only applies if car has traveled at least 3mi in the last 1h
-        (delta(job:odometer:value{job="tesla_go"}[1h]) > 3)
-      )
-    ), 0)
+      # Delta of battery level for 70kWh vehicle
+      (delta(job:battery_percent:value{job="tesla_go"}[1h]) * -70 * 10)
+        and
+      # Only applies if the battery level has decreased by 3% in last 1h
+      (delta(job:battery_percent:value{job="tesla_go"}[1h]) < -3)
+    )
+      /
+    # Delta of odometer reading
+    delta(job:odometer:value{job="tesla_go"}[1h])
+  )
+    or
+  # For every other point, set to previous value
+  (job:approx_energy_consumption:ratio_rate{job="tesla_go"} offset 15s)
